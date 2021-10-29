@@ -3,21 +3,20 @@
  * @ Madison Sanchez-Forman
  */
  
-var table = document.getElementById("board");
-var dimension = document.querySelector("#dimension");
-var similarity = document.querySelector("#threshold");
-var vacant = document.querySelector("#vacantRatio");
-var popRatio = document.querySelector("#popRatio");
-var color1 = document.querySelector("#popXcolor");
-var color2 = document.querySelector("#popYcolor");
-var random = document.querySelector("#randomize");
+var table = document.getElementById("board"), dimension = document.querySelector("#dimension"),
+similarity = document.querySelector("#threshold"), vacant = document.querySelector("#vacantRatio"),
+popRatio = document.querySelector("#popRatio"), color1 = document.querySelector("#popXcolor"),
+color2 = document.querySelector("#popYcolor"), random = document.querySelector("#randomize"), 
+run = document.querySelector("#runstop");
 /******************************************************************************/                                                                     
 var d = dimension.value, total = d * d, numVacant = Math.round(total * vacant.value);
 var remaining = total - numVacant, numPop1 = remaining * popRatio.value, numPop2 = numPop1;
-var population1 = [], population2 = []; vacancies = [];
+var cells = []; 
 /******************************************************************************/
 let mainTable = makeTable(color1.value, color2.value);
 table.appendChild(mainTable);  
+updateBoard();
+/******************************************************************************/
 dimension.addEventListener("input", function(){
   updateBoard();
 });
@@ -26,6 +25,7 @@ vacant.addEventListener("input",function(){
 });
 popRatio.addEventListener("input",function(){
     updateBoard;
+    makeTable();
 });
 color1.addEventListener("input", function(){
     updateBoard();
@@ -37,29 +37,39 @@ color2.addEventListener("input", function(){
 });
 random.addEventListener("click", function(){
     randomize();
+
 });
-
-
+run.addEventListener("click", function(){
+run.innerHTML = "Stop!"
+var generations = 0;
+let array = initArr();
+makeHappy();
+document.querySelector("p").innerHTML="Generations: " +  generations++;
+})
+/******************************************************************************/
 function initArr(){
-   size = dimension.value;
-   board = [];
+   let size = dimension.value, total = size * size;
+   let board = [];
+   let cells = [];
+   for(let i = 0; i < getVacant(); i++){cells.push(0)};
+   for(let i = 0; i < getPop1(); i++){cells.push(1)};
+   for(let i = 0; i < getPop2(); i++){cells.push(2)};
    for(var i = 0; i < size; i++){
        board[i] = [];
        for(var j = 0; j < size; j++){
-           board[i][j]= Math.floor(Math.random() *3);  
-        } 
-        }
+           board[i][j]= cells[Math.floor(Math.random() * cells.length)]}}
    return board; 
 }
 function updateBoard(){
-    table.removeChild(table.firstElementChild);                                 // if value changed, remove old child and add new one
-    table.appendChild(makeTable());
     numVacant = getVacant();
     numPop1 = getPop1();
     numPop2 = getPop2();
+    table.removeChild(table.firstElementChild);                                 // if value changed, remove old child and add new one
+    table.appendChild(makeTable());
+
 }
 function makeTable(c1, c2, arr) {
-    let array = initArr();
+    array = initArr();
     var table = document.createElement('table');
     for (var i = 0; i < array.length; i++) {
         var row = document.createElement('tr');
@@ -82,26 +92,17 @@ function makeTable(c1, c2, arr) {
 function getVacant(){
     let t = dimension.value * dimension.value;
     let result = Math.round(t * vacant.value);
-    for(let i = 0; i < result; i++){
-        vacancies.push(0);
-     }
     return result;
 }
 function getPop1(){
  let  t = dimension.value * dimension.value, r = popRatio.value, v = getVacant();
  let remaining = t - v;
  let result = Math.round(remaining * r);
- for(let i = 0; i < result; i++){
-    population1.push(1);
- }
  return result;
 }
 function getPop2(){
-    let t = dimension.value * dimension.value, pop1 = getPop1();
+    let t = (dimension.value * dimension.value)-getVacant(), pop1 = getPop1();
     let result = Math.round(t-pop1);
-    for(let i = 0; i < result; i++){
-        population2.push(2);
-     }
     return result;
 }
 function randomize(){
@@ -109,4 +110,70 @@ function randomize(){
     updateBoard();
     makeTable(color1.value, color2.value, newArr);
 
+}
+/******************************************************************************/
+function makeHappy(){
+    var i, j;
+    do{
+        i = Math.floor(Math.random()*(dimension.value - 1));
+        j = Math.floor(Math.random()*(dimension.value - 1))
+    } while(array[i][j]==0)
+    var currentPop = array[i][j];
+    while(isHappy(i,j) == false){
+        array[i][j] = 0;
+            array[i][j] == currentPop;
+            updateBoard();
+            makeTable(color1.value, color2.value);
+            
+        
+    }
+}
+function isHappy(x,y){
+var currentPop = array[x][y];
+var amnt1 = countNeighborsPop1(x,y);
+var amnt2 = countNeighborsPop2(x,y);
+var percent1 = amnt1 / (amnt1 + amnt2);
+var percent2 = amnt2 / (amnt1 + amnt2);
+if(currentPop == "1" && percent1 < similarity.value || currentPop == "2" && percent2 < similarity.value){
+    return true;
+} else {return false;}
+}
+
+function countNeighborsPop1(x,y){
+    var currentPop = array[x][y];
+    var count1 = 0;
+    for(let i = x - 1; i <= x + 1; i++){
+        for(let j = y -1; j <= y+1; j++){
+            if(i == x && j == y) {
+                continue; }
+            if(array[validIndex(i)][validIndex(j)] == 1) {
+                count1++;
+            }   
+        }   
+        }
+        return count1;
+     }
+function countNeighborsPop2(x,y){
+    var currentPop = array[x][y];
+    var count2 = 0;
+    for(let i = x - 1; i <= x + 1; i++){
+        for(let j = y -1; j <= y+1; j++){
+            if(i == x && j == y) {
+                continue; }
+            if(array[validIndex(i)][validIndex(j)] == 2) {
+                count2++;
+            }   }   
+        }
+        return count2;
+
+}
+
+function validIndex(indx){
+    var result = indx;
+    if (indx < 0){
+        result = indx + d; }
+    if (indx >= d) {
+        result = indx - d
+    }
+    return indx;
 }
