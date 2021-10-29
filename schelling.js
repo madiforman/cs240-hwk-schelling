@@ -11,7 +11,7 @@ run = document.querySelector("#runstop");
 /******************************************************************************/                                                                     
 var d = dimension.value, total = d * d, numVacant = Math.round(total * vacant.value);
 var remaining = total - numVacant, numPop1 = remaining * popRatio.value, numPop2 = numPop1;
-var cells = []; 
+var cells = [], cP1 = color1.value; cP2 = color2.value;
 /******************************************************************************/
 let mainTable = makeTable(color1.value, color2.value);
 table.appendChild(mainTable);  
@@ -24,27 +24,25 @@ vacant.addEventListener("input",function(){
     updateBoard();
 });
 popRatio.addEventListener("input",function(){
+    var rat = popRatio.value;
     updateBoard;
     makeTable();
 });
 color1.addEventListener("input", function(){
+    cP1 = color1.value;
     updateBoard();
-    makeTable(color1.value, color2.value);
 });
 color2.addEventListener("input", function(){
+    cP2 = color2.value;
     updateBoard();
-    makeTable(color1.value, color2.value);
 });
 random.addEventListener("click", function(){
     randomize();
-
+    console.log(isHappy(1,1));
 });
 run.addEventListener("click", function(){
 run.innerHTML = "Stop!"
-var generations = 0;
-let array = initArr();
 makeHappy();
-document.querySelector("p").innerHTML="Generations: " +  generations++;
 })
 /******************************************************************************/
 function initArr(){
@@ -79,9 +77,9 @@ function makeTable(c1, c2, arr) {
             if(array[i][j] == 0){
                 cell.style.backgroundColor = "#ffff";
             } else if (array[i][j] == 1){
-                cell.style.backgroundColor = color1.value;
+                cell.style.backgroundColor = cP1;
             } else if (array[i][j]== 2){
-                cell.style.backgroundColor = color2.value;
+                cell.style.backgroundColor = cP2;
             }
         }
         table.appendChild(row);
@@ -115,17 +113,15 @@ function randomize(){
 function makeHappy(){
     var i, j;
     do{
-        i = Math.floor(Math.random()*(dimension.value - 1));
-        j = Math.floor(Math.random()*(dimension.value - 1))
+        i = Math.floor(Math.random()*(dimension.value));
+        j = Math.floor(Math.random()*(dimension.value))
     } while(array[i][j]==0)
     var currentPop = array[i][j];
     while(isHappy(i,j) == false){
         array[i][j] = 0;
             array[i][j] == currentPop;
+            initArr(array[i][j]);
             updateBoard();
-            makeTable(color1.value, color2.value);
-            
-        
     }
 }
 function isHappy(x,y){
@@ -134,11 +130,10 @@ var amnt1 = countNeighborsPop1(x,y);
 var amnt2 = countNeighborsPop2(x,y);
 var percent1 = amnt1 / (amnt1 + amnt2);
 var percent2 = amnt2 / (amnt1 + amnt2);
-if(currentPop == "1" && percent1 < similarity.value || currentPop == "2" && percent2 < similarity.value){
+if(currentPop == 1 && percent1 < similarity.value || currentPop == 2 && percent2 < similarity.value){
     return true;
 } else {return false;}
 }
-
 function countNeighborsPop1(x,y){
     var currentPop = array[x][y];
     var count1 = 0;
@@ -167,11 +162,10 @@ function countNeighborsPop2(x,y){
         return count2;
 
 }
-
 function validIndex(indx){
     var result = indx;
     if (indx < 0){
-        result = indx + d; }
+        result = (indx + d); }
     if (indx >= d) {
         result = indx - d
     }
